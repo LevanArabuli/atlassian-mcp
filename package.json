@@ -1,0 +1,53 @@
+{
+  "name": "atlassian-mcp",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for Atlassian MCP (Microservices Control Plane) server",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun run rollup -c",
+    "dev": "bun run rollup -c -w",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "lint": "bun run eslint . --ext .ts",
+    "format": "bun run prettier --write \"src/**/*.ts\"",
+    "prepare": "bun run build",
+    "prepublishOnly": "bun test && bun run lint"
+  },
+  "keywords": [
+    "atlassian",
+    "mcp",
+    "jira",
+    "confluence",
+    "sdk",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.19",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.5",
+    "rollup": "^4.9.6",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  }
+}
