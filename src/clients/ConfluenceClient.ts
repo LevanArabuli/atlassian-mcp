@@ -1,3 +1,4 @@
+import { ConfluenceClient as AtlassianConfluenceClient } from '@atlassian/confluence-client';
 import { MCPClient } from '../core/MCPClient';
 import { MCPClientOptions, MCPResponse } from '../types';
 
@@ -87,63 +88,156 @@ export interface ConfluenceCreatePageParams {
 }
 
 export interface ConfluenceUpdatePageParams {
-  version: {
-    number: number;
-  };
-  title?: string;
-  body?: {
+  type: string;
+  title: string;
+  body: {
     storage: {
       value: string;
       representation: string;
     };
   };
+  version?: {
+    number: number;
+  };
 }
 
 export class ConfluenceClient extends MCPClient {
+  private readonly confluenceClient: AtlassianConfluenceClient;
+
   constructor(options: MCPClientOptions) {
     super(options);
-  }
-
-  // Page Operations
-  async searchPages(params: ConfluenceSearchParams): Promise<MCPResponse<ConfluenceSearchResponse>> {
-    const { cql, start = 0, limit = 25, expand = [] } = params;
-
-    return this.get<ConfluenceSearchResponse>('/rest/api/content/search', {
-      params: {
-        cql,
-        start,
-        limit,
-        expand: expand.join(','),
+    this.confluenceClient = new AtlassianConfluenceClient({
+      host: options.baseUrl,
+      authentication: {
+        basic: {
+          email: options.apiToken,
+          apiToken: options.apiToken,
+        },
       },
     });
   }
 
+  async searchPages(params: ConfluenceSearchParams): Promise<MCPResponse<ConfluenceSearchResponse>> {
+    try {
+      const { cql, start = 0, limit = 25, expand = [] } = params;
+      
+      const response = await this.confluenceClient.content.searchContent({
+        cql,
+        start,
+        limit,
+        expand: expand.join(','),
+      });
+
+      return {
+        data: response as ConfluenceSearchResponse,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getPage(pageId: string): Promise<MCPResponse<ConfluencePage>> {
-    return this.get<ConfluencePage>(`/rest/api/content/${pageId}`);
+    try {
+      const response = await this.confluenceClient.content.getContentById({
+        id: pageId,
+      });
+
+      return {
+        data: response as ConfluencePage,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async createPage(page: ConfluenceCreatePageParams): Promise<MCPResponse<ConfluencePage>> {
-    return this.post<ConfluencePage>('/rest/api/content', page);
+    try {
+      const response = await this.confluenceClient.content.createContent({
+        type: page.type,
+        title: page.title,
+        space: page.space,
+        body: page.body,
+        version: page.version,
+      });
+
+      return {
+        data: response as ConfluencePage,
+        status: 201,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async updatePage(
-    pageId: string,
-    page: ConfluenceUpdatePageParams,
-  ): Promise<MCPResponse<ConfluencePage>> {
-    return this.put<ConfluencePage>(`/rest/api/content/${pageId}`, page);
+  async updatePage(pageId: string, page: ConfluenceUpdatePageParams): Promise<MCPResponse<ConfluencePage>> {
+    try {
+      const response = await this.confluenceClient.content.updateContent({
+        id: pageId,
+        type: page.type,
+        title: page.title,
+        body: page.body,
+        version: page.version,
+      });
+
+      return {
+        data: response as ConfluencePage,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async deletePage(pageId: string): Promise<MCPResponse<void>> {
-    return this.delete<void>(`/rest/api/content/${pageId}`);
+    try {
+      await this.confluenceClient.content.deleteContent({
+        id: pageId,
+      });
+
+      return {
+        data: undefined,
+        status: 204,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  // Space Operations
   async getSpaces(): Promise<MCPResponse<{ results: ConfluenceSpace[] }>> {
-    return this.get<{ results: ConfluenceSpace[] }>('/rest/api/space');
+    try {
+      const response = await this.confluenceClient.space.getSpaces();
+
+      return {
+        data: { results: response as ConfluenceSpace[] },
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getSpace(spaceKey: string): Promise<MCPResponse<ConfluenceSpace>> {
-    return this.get<ConfluenceSpace>(`/rest/api/space/${spaceKey}`);
+    try {
+      const response = await this.confluenceClient.space.getSpace({
+        spaceKey,
+      });
+
+      return {
+        data: response as ConfluenceSpace,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Attachment Operations

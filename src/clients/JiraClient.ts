@@ -1,3 +1,4 @@
+import { JiraClient as AtlassianJiraClient } from '@atlassian/jira-client';
 import { MCPClient } from '../core/MCPClient';
 import { MCPClientOptions, MCPResponse } from '../types';
 
@@ -92,42 +93,106 @@ export interface JiraTransitionParams {
 }
 
 export class JiraClient extends MCPClient {
+  private readonly jiraClient: AtlassianJiraClient;
+
   constructor(options: MCPClientOptions) {
     super(options);
+    this.jiraClient = new AtlassianJiraClient({
+      host: options.baseUrl,
+      authentication: {
+        basic: {
+          email: options.apiToken,
+          apiToken: options.apiToken,
+        },
+      },
+    });
   }
 
-  // Issue Operations
   async searchIssues(params: JiraSearchParams): Promise<MCPResponse<JiraSearchResponse>> {
-    const { jql, startAt = 0, maxResults = 50, fields = [], expand = [] } = params;
-
-    return this.get<JiraSearchResponse>('/rest/api/3/search', {
-      params: {
+    try {
+      const { jql, startAt = 0, maxResults = 50, fields = [], expand = [] } = params;
+      
+      const response = await this.jiraClient.issues.searchIssues({
         jql,
         startAt,
         maxResults,
         fields: fields.join(','),
         expand: expand.join(','),
-      },
-    });
+      });
+
+      return {
+        data: response as JiraSearchResponse,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getIssue(issueKey: string): Promise<MCPResponse<JiraIssue>> {
-    return this.get<JiraIssue>(`/rest/api/3/issue/${issueKey}`);
+    try {
+      const response = await this.jiraClient.issues.getIssue({
+        issueKey,
+      });
+
+      return {
+        data: response as JiraIssue,
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async createIssue(issue: Partial<JiraIssue>): Promise<MCPResponse<JiraIssue>> {
-    return this.post<JiraIssue>('/rest/api/3/issue', issue);
+    try {
+      const response = await this.jiraClient.issues.createIssue({
+        fields: issue.fields,
+      });
+
+      return {
+        data: response as JiraIssue,
+        status: 201,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async updateIssue(
-    issueKey: string,
-    issue: Partial<JiraIssue>,
-  ): Promise<MCPResponse<void>> {
-    return this.put<void>(`/rest/api/3/issue/${issueKey}`, issue);
+  async updateIssue(issueKey: string, issue: Partial<JiraIssue>): Promise<MCPResponse<void>> {
+    try {
+      await this.jiraClient.issues.updateIssue({
+        issueKey,
+        fields: issue.fields,
+      });
+
+      return {
+        data: undefined,
+        status: 204,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async deleteIssue(issueKey: string): Promise<MCPResponse<void>> {
-    return this.delete<void>(`/rest/api/3/issue/${issueKey}`);
+    try {
+      await this.jiraClient.issues.deleteIssue({
+        issueKey,
+      });
+
+      return {
+        data: undefined,
+        status: 204,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Project Operations
@@ -141,7 +206,19 @@ export class JiraClient extends MCPClient {
 
   // Workflow Operations
   async getWorkflows(projectKey: string): Promise<MCPResponse<JiraWorkflow[]>> {
-    return this.get<JiraWorkflow[]>(`/rest/api/3/workflow/project/${projectKey}`);
+    try {
+      const response = await this.jiraClient.workflows.getProjectWorkflows({
+        projectKey,
+      });
+
+      return {
+        data: response as JiraWorkflow[],
+        status: 200,
+        headers: {},
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getWorkflow(workflowId: string): Promise<MCPResponse<JiraWorkflow>> {
