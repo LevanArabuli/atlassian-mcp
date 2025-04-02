@@ -9,8 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun run rollup -c",
-    "dev": "bun run rollup -c -w",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm --format cjs --sourcemap --dts",
+    "dev": "bun build ./src/index.ts --outdir ./dist --target node --format esm --format cjs --sourcemap --dts --watch",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
     "lint": "bun run eslint . --ext .ts",
@@ -34,9 +34,6 @@
     "pino-pretty": "^10.3.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^20.11.19",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
@@ -45,7 +42,6 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "prettier": "^3.2.5",
-    "rollup": "^4.9.6",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
